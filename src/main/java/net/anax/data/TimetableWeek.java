@@ -23,6 +23,7 @@ public class TimetableWeek {
         }
 
         for(TimetableDay day : days){
+            System.out.println("===============" + day.dayOfWeek + " " + day.date + "============");
             for(LessonRow row : day.lessonRows){
                 for(TimetableLesson lesson : row.lessons){
                     if(lesson == TimetableLesson.EMPTY_LESSON){continue;}

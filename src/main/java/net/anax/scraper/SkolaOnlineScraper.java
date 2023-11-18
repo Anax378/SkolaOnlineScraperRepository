@@ -287,6 +287,9 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
             Element th = allRows.get(i).select("> th").first();
             if(th == null){continue;}
 
+            Elements dayDateInfo = th.select(" > table > tbody > tr");
+
+
             String rowspanAttribute = th.attr("rowspan");
             int rowspan;
 
@@ -294,6 +297,24 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
             else{rowspan = Integer.parseInt(rowspanAttribute);}
 
             TimetableDay day = new TimetableDay(rowspan);
+
+            if(!dayDateInfo.isEmpty()){
+                Element dayOfWeekElement = dayDateInfo.get(0).select(" > td").first();
+                Element dateElement = dayDateInfo.get(1).select(" > td").first();
+                if(dayOfWeekElement != null){
+                    String dayOfWeek = dayOfWeekElement.text();
+                    if(dayOfWeek != null){
+                        day.dayOfWeek = dayOfWeek;
+                    }
+                }
+                if(dateElement != null){
+                    String date = dateElement.text();
+                    if(date != null){
+                        day.date = date;
+                    }
+                }
+            }
+
             for(int r = 0; r < rowspan; r++){
                 LessonRow row = new LessonRow(lessonCount);
                 int cellCount = lessonCount;
