@@ -1,5 +1,7 @@
 package net.anax;
 
+import net.anax.data.TimetableWeek;
+import net.anax.scraper.NotLoggedInException;
 import net.anax.scraper.RequestFailedException;
 import net.anax.scraper.SkolaOnlineScraper;
 import org.json.simple.JSONObject;
@@ -13,7 +15,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) throws IOException, XPathExpressionException, ParserConfigurationException, SAXException, RequestFailedException, ParseException {
+    public static void main(String[] args) throws IOException, RequestFailedException, ParseException, NotLoggedInException {
         JSONParser parser = new JSONParser();
         JSONObject data = (JSONObject) parser.parse(new FileReader("config.json"));
         String password = (String) data.get("password");
@@ -21,7 +23,7 @@ public class Main {
 
         SkolaOnlineScraper scraper = new SkolaOnlineScraper(username, password);
         scraper.login();
-        scraper.getTimeTable();
-
+        TimetableWeek timetable = scraper.getTimeTable();
+        timetable.printSelf();
     }
 }

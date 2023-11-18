@@ -2,13 +2,16 @@ package net.anax.scraper;
 
 import net.anax.config.Configuration;
 import net.anax.config.ConfigurationManager;
+import net.anax.data.*;
 import net.anax.http.HttpCookie;
 import net.anax.http.HttpMethod;
 import net.anax.logging.Logger;
+import net.anax.util.StringUtilities;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -182,7 +185,7 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
 """+boundary_delimiter + "--\n";
         return body.replace("\n", "\r\n");
     }
-    public void getTimeTable() throws IOException {
+    public TimetableWeek getTimeTable() throws IOException, RequestFailedException, NotLoggedInException {
         URL url = new URL("https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx");
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -222,10 +225,12 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
         while((line = reader.readLine()) != null){
             html.append(line + "\n");
         }
-        getTimeTableFromHTML(html.toString());
+
         connection.disconnect();
+
+        return getTimeTableFromHTML(html.toString());
     }
-    private String constructAuthCookieHeaderValue(){
+    private String constructAuthCookieHeaderValue() throws NotLoggedInException {
         String cookie;
         HttpCookie ASP_NET_SessionId = cookies.get("ASP.NET_SessionId");
         HttpCookie SERVERID = cookies.get("SERVERID");
@@ -251,46 +256,122 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
 
         return  cookie;
     }
-    private void getTimeTableFromHTML(String html){
+    private TimetableWeek getTimeTableFromHTML(String html) throws RequestFailedException {
         Document doc = Jsoup.parse(html);
 
         Element timeTableTable = doc.select("table.DctTable").first();
+        if(timeTableTable == null){throw new RequestFailedException("time table not found in html");}
+
         Element tbody = timeTableTable.select("> tbody").first();
-        Element row = tbody.select("> tr").first();
+        if(tbody == null){throw new RequestFailedException("time table not found in html");}
 
-        Elements columns = row.select("> th");
+        Element infoRow = tbody.select("> tr").first();
+        if(infoRow == null){throw new RequestFailedException("time table not in correct format");}
 
-        int maxColumns = columns.size()-1;
+        int lessonCount = infoRow.select("> th").size() -1;
+        if(lessonCount < 0){throw new RequestFailedException("time table not in correct format");}
 
-        Elements cells = tbody.select("td.DctCell");
-
-        int column = 0;
-        for(Element cell : cells){
-            Elements spans = cell.select("> table > tbody > tr > td > span");
-            if(spans.isEmpty()){
-                System.out.print("|----------------------------------------|");
-                column++;
+        Elements allRows = tbody.select("> tr");
+        int daysDisplayed = 0;
+        for(int i = 1; i < allRows.size(); i++){
+            if(!allRows.get(i).select("> th").isEmpty()){
+                daysDisplayed++;
             }
-            else{
-                String colspanString = cell.attr("colspan");
-                int colspan = colspanString.isEmpty() ? 1 : Integer.parseInt(colspanString);
-                column += colspan;
-
-                Element span1 = spans.get(0);
-                Element span2 = spans.get(1);
-                String[] info = span2.text().split(" ");
-                String text = span1.text() + "_" + info[0] + "_" + info[1];
-                System.out.print("|" + text + " ".repeat(40-text.length()) + "|");
-            }
-
-            if(column < maxColumns){}
-            else{column = 0; System.out.println();}
-
         }
 
+        TimetableWeek timetable = new TimetableWeek(lessonCount, daysDisplayed);
+        int dayIndex = 0;
+        ;System.out.println("Rows: " + allRows.size());
+        ;System.out.println("lesson count: " + lessonCount);
+        for (int i = 1; i < allRows.size(); i++){
+            Element th = allRows.get(i).select("> th").first();
+            if(th == null){continue;}
 
+            String rowspanAttribute = th.attr("rowspan");
+            int rowspan;
+
+            if(!StringUtilities.isInteger(rowspanAttribute)){rowspan = 1;}
+            else{rowspan = Integer.parseInt(rowspanAttribute);}
+
+            TimetableDay day = new TimetableDay(rowspan);
+            for(int r = 0; r < rowspan; r++){
+                LessonRow row = new LessonRow(lessonCount);
+                int cellCount = lessonCount;
+                int offset = 0;
+                for(int l = 0; l < cellCount; l++){
+                    Element td = allRows.get(i+r).select("> td").get(l);
+                    String colspanString = td.attr("colspan");
+                    int colspan = 1;
+                    if(StringUtilities.isInteger(colspanString)){
+                        colspan = Integer.parseInt(colspanString);
+                    }
+                    cellCount -= (colspan - 1);
+                    TimetableLesson lesson = getLessonFromTd(allRows.get(i+r).select("> td").get(l));
+                    for(int c = 0; c < colspan; c++){
+                        row.lessons[l+c+offset] = lesson;
+                    }
+                    offset += (colspan-1);
+                }
+                day.lessonRows[r] = row;
+            }
+            timetable.days[dayIndex] = day;
+            dayIndex++;
+        }
+
+        return timetable;
 
     }
 
+    private TimetableLesson getLessonFromTd(Element td){
+        Element innerTd = td.select("> table > tbody > tr > td").first();
+        if(innerTd == null){return TimetableLesson.EMPTY_LESSON;}
+
+        TimetableLesson lesson = TimetableLesson.getBlankLesson();
+
+        Elements spans = innerTd.select("> span");
+
+        String innerTdClass = innerTd.className();
+        if(innerTdClass != null){
+            for(TimetableLessonType type : TimetableLessonType.values()){
+                if(type.identifier.equals(innerTdClass)){
+                    lesson.type = type;
+                }
+            }
+        }
+
+
+        if(!spans.isEmpty()){
+            String innerText = spans.first().text();
+            lesson.subjectShortcut = (innerText == null) ? "" : innerText;
+        }
+        if(spans.size() > 1){
+            String innerText = spans.get(1).text();
+            if(innerText != null){
+                String[] info = innerText.split(" ");
+                lesson.groupShortcut = info[0];
+                if(info.length > 1){
+                    lesson.classroomShortcut = info[1];
+                }
+            }
+        }
+
+        String mouseover = innerTd.attr("onmouseover");
+        if(mouseover != null){
+            mouseover = mouseover.replace("onMouseOverTooltip('", "");
+            mouseover = mouseover.substring(0, mouseover.length()-2);
+            String[] arguments = mouseover.split("' ?, ?'");
+            lesson.subjectFullName = arguments[0];
+            if(arguments.length > 1){
+                String[] furtherInfo = arguments[1].split("~");
+                FurtherInfoElement[] furtherInfoElements = new FurtherInfoElement[furtherInfo.length/2];
+                for(int i = 0; i+1 < furtherInfo.length; i+=2){
+                    FurtherInfoElement element = new FurtherInfoElement(furtherInfo[i].replace(":", ""), furtherInfo[i+1]);
+                    furtherInfoElements[i/2] = element;
+                }
+                lesson.furtherInfo = furtherInfoElements;
+            }
+        }
+        return lesson;
+    }
 
 }
