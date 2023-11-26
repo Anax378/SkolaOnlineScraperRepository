@@ -1,14 +1,15 @@
 package net.anax.data;
 
 import net.anax.scraper.RequestFailedException;
-import net.anax.util.ArrayUtilities;
 import net.anax.util.StringUtilities;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.sql.Time;
+import java.util.Arrays;
 
 public class TimetableWeek {
 
@@ -60,11 +61,9 @@ public class TimetableWeek {
             System.out.println(timeInterval);
         }
     }
-
     private String pad(int finalLength, String string){
         return string + " ".repeat(Math.max(0, finalLength-string.length()));
     }
-
     public static TimetableWeek getTimeTableFromHTML(String html) throws RequestFailedException {
         Document doc = Jsoup.parse(html);
 
@@ -164,7 +163,6 @@ public class TimetableWeek {
         return timetable;
 
     }
-
     private static String[] getLessonTimeIntervals(Element tr){
         if(tr == null){return new String[0];}
         Elements ths = tr.select("> th");
@@ -183,6 +181,21 @@ public class TimetableWeek {
             }
         }
         return lessonTimeIntervals;
+    }
+    public JSONObject getJsonObject(){
+        JSONObject data = new JSONObject();
+
+        JSONArray day_array = new JSONArray();
+        JSONArray time_interval_array = new JSONArray();
+
+        for(TimetableDay day : days){
+            day_array.add(day.getJsonObject());
+        }
+
+        time_interval_array.addAll(Arrays.asList(lessonTimeIntervals));
+        data.put("lessonTimeIntervals", time_interval_array);
+        data.put("days", day_array);
+        return data;
     }
 
 }

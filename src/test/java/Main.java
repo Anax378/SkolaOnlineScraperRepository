@@ -1,6 +1,5 @@
 import net.anax.data.TimetableWeek;
 import net.anax.scraper.RequestFailedException;
-import net.anax.scraper.SkolaOnlineScraper;
 
 import java.io.*;
 
@@ -16,5 +15,7 @@ public class Main {
         TimetableWeek week = TimetableWeek.getTimeTableFromHTML(builder.toString());
         week.printSelf();
 
+        System.out.println("---------------JSON representation---------------");
+        System.out.println(week.getJsonObject().toJSONString());
     }
 }

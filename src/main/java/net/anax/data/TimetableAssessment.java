@@ -1,5 +1,7 @@
 package net.anax.data;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.jsoup.nodes.Element;
 
 public class TimetableAssessment {
@@ -10,7 +12,6 @@ public class TimetableAssessment {
     public TimetableAssessment(int infoLength){
         furtherInfo = new FurtherInfoElement[infoLength];
     }
-
     public static TimetableAssessment parseAssessment(Element td){
         Element img = td.select("> table > tbody > tr > td > img").first();
         if(img == null){return null;}
@@ -46,16 +47,27 @@ public class TimetableAssessment {
         }
         return assessment;
     }
-
     public static TimetableAssessment getBlankAssessment(){
         TimetableAssessment assessment = new TimetableAssessment(0);
         assessment.showPopupWindowURL  = "";
         return assessment;
     }
-
     public static boolean isAssessment(Element td){
         Element img = td.select("> table > tbody > tr > td > img").first();
         return img != null;
 
+    }
+
+    public JSONObject getJsonObject() {
+        JSONObject data = new JSONObject();
+        data.put("showPopupWindowURL", showPopupWindowURL);
+        data.put("subject", subject);
+        JSONArray info_array = new JSONArray();
+
+        for(FurtherInfoElement element : furtherInfo){
+            info_array.add(element.getJSonObject());
+        }
+        data.put("furtherInfo", info_array);
+        return data;
     }
 }

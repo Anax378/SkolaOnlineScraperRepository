@@ -1,5 +1,7 @@
 package net.anax.data;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -80,5 +82,32 @@ public class TimetableLesson {
             }
         }
         return lesson;
+    }
+
+    public JSONObject getJsonObject() {
+        JSONObject data = new JSONObject();
+        if(this == EMPTY_LESSON){
+            data.put("isEmpty", 1);
+            return data;
+        }
+        data.put("subjectShortcut", subjectShortcut);
+        data.put("subjectFullName", subjectFullName);
+        data.put("groupShortcut", groupShortcut);
+        data.put("classroomShortcut", classroomShortcut);
+
+        JSONArray info_array = new JSONArray();
+        JSONArray assessment_array = new JSONArray();
+
+        for(FurtherInfoElement element : furtherInfo){
+            info_array.add(element.getJSonObject());
+        }
+        for(TimetableAssessment assessment : assessments){
+            assessment_array.add(assessment.getJsonObject());
+        }
+
+        data.put("assessments", assessment_array);
+        data.put("furtherInfo", info_array);
+
+        return data;
     }
 }
