@@ -15,7 +15,6 @@ public class TimetableLesson {
     public FurtherInfoElement[] furtherInfo;
     public TimetableLessonType type;
     public TimetableAssessment[] assessments;
-
     public static TimetableLesson getBlankLesson(){
         TimetableLesson lesson = new TimetableLesson();
         lesson.subjectShortcut = "";
@@ -80,6 +79,55 @@ public class TimetableLesson {
             }else{
                 ;System.out.println("faulty mouseover: " + mouseover + " innerTd: " + innerTd + "innderTd: " + innerTd.text());
             }
+        }
+        return lesson;
+    }
+
+    public static TimetableLesson parseFromJson(JSONObject data) {
+        if(data.containsKey("isEmpty")){
+            return EMPTY_LESSON;
+        }
+        TimetableLesson lesson = getBlankLesson();
+
+        if(data.containsKey("subjectShortcut") && data.get("subjectShortcut") instanceof String) {
+            lesson.subjectShortcut = (String) data.get("subjectShortcut");
+        }
+        if(data.containsKey("subjectFullName") && data.get("subjectFullName") instanceof String) {
+            lesson.subjectFullName = (String) data.get("subjectFullName");
+        }
+        if(data.containsKey("groupShortcut") && data.get("groupShortcut") instanceof String) {
+            lesson.groupShortcut = (String) data.get("groupShortcut");
+        }
+        if(data.containsKey("classroomShortcut") && data.get("classroomShortcut") instanceof String) {
+            lesson.classroomShortcut = (String) data.get("classroomShortcut");
+        }
+
+        if(data.containsKey("type") && data.get("type") instanceof String){
+            String type_name = (String) data.get("type");
+            for(TimetableLessonType type : TimetableLessonType.values()){
+                if(type.name().equals(type_name)){
+                    lesson.type = type;
+                    break;
+                }
+            }
+        }
+
+        if(data.containsKey("assessments") && data.get("assessments") instanceof JSONArray && !((JSONArray) data.get("assessments")).isEmpty() && ((JSONArray) data.get("assessments")).get(0) instanceof JSONObject){
+            JSONArray assessment_array = (JSONArray) data.get("assessments");
+            TimetableAssessment[] assessments = new TimetableAssessment[assessment_array.size()];
+            for(int i = 0; i < assessments.length; i++){
+                assessments[i] = TimetableAssessment.parseFromJson((JSONObject) assessment_array.get(i));
+            }
+            lesson.assessments = assessments;
+        }
+
+        if(data.containsKey("furtherInfo") && data.get("furtherInfo") instanceof JSONArray && !((JSONArray) data.get("furtherInfo")).isEmpty() && ((JSONArray) data.get("furtherInfo")).get(0) instanceof JSONObject){
+            JSONArray info_array = (JSONArray) data.get("furtherInfo");
+            FurtherInfoElement[] elements = new FurtherInfoElement[info_array.size()];
+            for(int i = 0; i < elements.length; i++){
+                elements[i] = FurtherInfoElement.parseFromJson((JSONObject)info_array.get(i));
+            }
+            lesson.furtherInfo = elements;
         }
         return lesson;
     }

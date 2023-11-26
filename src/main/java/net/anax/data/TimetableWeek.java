@@ -4,6 +4,8 @@ import net.anax.scraper.RequestFailedException;
 import net.anax.util.StringUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -194,6 +196,43 @@ public class TimetableWeek {
         data.put("lessonTimeIntervals", time_interval_array);
         data.put("days", day_array);
         return data;
+    }
+
+    public static TimetableWeek parseFromJsonString(String jsonString) throws ParseException, InvalidDataInJsonException {
+        JSONParser parser = new JSONParser();
+        JSONObject json = (JSONObject) parser.parse(jsonString);
+
+        TimetableWeek week = new TimetableWeek(0, 0);
+
+        if(json.containsKey("days") && json.get("days") instanceof JSONArray && !((JSONArray) json.get("days")).isEmpty() && ((JSONArray) json.get("days")).get(0) instanceof JSONObject){
+            System.out.println("HERE");
+            JSONArray day_array = (JSONArray) json.get("days");
+            TimetableDay[] days = new TimetableDay[day_array.size()];
+            for(int i = 0; i < day_array.size(); i++){
+                if(day_array.get(i) instanceof JSONObject){
+                    days[i] = TimetableDay.parseFromJson((JSONObject) day_array.get(i));
+                }else{
+                    days[i] = TimetableDay.getBlankDay();
+                }
+            }
+            week.days = days;
+        }
+
+        if(json.containsKey("lessonTimeIntervals") && json.get("lessonTimeIntervals") instanceof JSONArray && !((JSONArray) json.get("lessonTimeIntervals")).isEmpty() && (((JSONArray) json.get("lessonTimeIntervals")).get(0) instanceof String)){
+            JSONArray time_interval_array = (JSONArray) json.get("lessonTimeIntervals");
+            String[] intervals = new String[time_interval_array.size()];
+            for(int i = 0; i < time_interval_array.size(); i++){
+                if(time_interval_array.get(i) instanceof String){
+                    intervals[i] = (String) time_interval_array.get(i);
+                }else{
+                    intervals[i] = "";
+                }
+            }
+            week.lessonTimeIntervals = intervals;
+        }
+
+        return week;
+
     }
 
 }

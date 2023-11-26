@@ -57,7 +57,24 @@ public class TimetableAssessment {
         return img != null;
 
     }
-
+    public static TimetableAssessment parseFromJson(JSONObject data) {
+        TimetableAssessment assessment = getBlankAssessment();
+        if(data.containsKey("showPopupWindowURL") && data.get("showPopupWindowURL") instanceof String){
+            assessment.showPopupWindowURL = (String) data.get("showPopupWindowURL");
+        }
+        if(data.containsKey("subject") && data.get("subject") instanceof String){
+            assessment.subject = (String) data.get("subject");
+        }
+        if(data.containsKey("furtherInfo") && data.get("furtherInfo") instanceof JSONArray && !((JSONArray) data.get("furtherInfo")).isEmpty() && ((JSONArray) data.get("furtherInfo")).get(0) instanceof JSONObject){
+            JSONArray info_array = (JSONArray) data.get("furtherInfo");
+            FurtherInfoElement[] elements = new FurtherInfoElement[info_array.size()];
+            for(int i = 0; i < elements.length; i++){
+                elements[i] = FurtherInfoElement.parseFromJson((JSONObject) info_array.get(i));
+            }
+            assessment.furtherInfo = elements;
+        }
+        return assessment;
+    }
     public JSONObject getJsonObject() {
         JSONObject data = new JSONObject();
         data.put("showPopupWindowURL", showPopupWindowURL);
