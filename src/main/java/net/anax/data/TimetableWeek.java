@@ -140,8 +140,6 @@ public class TimetableWeek {
                     cellCount -= (colspan - 1);
                     if(TimetableAssessment.isAssessment(td)){
                         TimetableAssessment assessment = TimetableAssessment.parseAssessment(td);
-
-                        //TODO: fix this;
                         day.lessonRows[rowInDayIndex-1].lessons[lessonIndex].assessments = new TimetableAssessment[]{assessment};
                         row.lessons[lessonIndex+offset] = TimetableLesson.EMPTY_LESSON;
 

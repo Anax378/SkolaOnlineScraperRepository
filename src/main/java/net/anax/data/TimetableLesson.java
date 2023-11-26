@@ -94,6 +94,7 @@ public class TimetableLesson {
         data.put("subjectFullName", subjectFullName);
         data.put("groupShortcut", groupShortcut);
         data.put("classroomShortcut", classroomShortcut);
+        data.put("type", type.name());
 
         JSONArray info_array = new JSONArray();
         JSONArray assessment_array = new JSONArray();
