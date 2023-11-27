@@ -197,7 +197,6 @@ public class TimetableWeek {
         data.put("days", day_array);
         return data;
     }
-
     public static TimetableWeek parseFromJsonString(String jsonString) throws ParseException, InvalidDataInJsonException {
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(jsonString);

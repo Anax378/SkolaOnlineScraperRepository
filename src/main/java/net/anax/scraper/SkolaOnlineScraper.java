@@ -18,6 +18,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
 public class SkolaOnlineScraper {
@@ -27,15 +28,30 @@ public class SkolaOnlineScraper {
     private String password;
     private HashMap<String, HttpCookie> cookies = new HashMap<>();
     private Configuration configuration;
-
-    public SkolaOnlineScraper(String username, String password) throws IOException {
+    public SkolaOnlineScraper(String username, String password){
         this.username = username;
         this.password = password;
 
         configuration = ConfigurationManager.getInstance().getConfiguration();
     }
 
-    public void login() throws IOException, RequestFailedException {
+    public void login() throws RequestFailedException, IOException {
+        try{
+            login(false);
+        }catch(RequestFailedException e){
+            throw e;
+        }
+        catch(IOException e){
+            throw e;
+        }
+        catch(Exception e){
+            System.out.println("unexpected exception");
+            e.printStackTrace();
+        }
+    }
+    public void login(boolean safe) throws IOException, RequestFailedException {
+        if(safe){login();}
+
         URL url = new URL("https://aplikace.skolaonline.cz/SOL/Prihlaseni.aspx");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -83,7 +99,7 @@ public class SkolaOnlineScraper {
 
             if(headerName != null){
                 if(headerName.equals("set-cookie")){
-                    String[] cookiesToSet = headerValue.split("; ");
+                    String[] cookiesToSet = headerValue.split("; ?");
 
                     String[] cookie_name_and_value = cookiesToSet[0].split("=");
 
@@ -226,9 +242,33 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
             html.append(line + "\n");
         }
 
-        connection.disconnect();
+        for(int i = 0; ; i++){
+            String name = connection.getHeaderFieldKey(i);
+            String value = connection.getHeaderField(i);
+            if(name == null && value == null){break;}
 
-        return TimetableWeek.getTimeTableFromHTML(html.toString());
+            if(Objects.equals(name, "set-cookie")){
+                if(value != null){
+                    String[] cookiesToSet = value.split(";");
+                    for(String cookieToSet : cookiesToSet){
+                        String[] header_and_value = cookieToSet.split("=");
+                        HttpCookie httpCookie = new HttpCookie(header_and_value[0], header_and_value.length > 1 ? header_and_value[1] : "true");
+                        this.cookies.put(httpCookie.name, httpCookie);
+                    }
+                }
+            }
+        }
+
+        connection.disconnect();
+        TimetableWeek week;
+        try {
+            week = TimetableWeek.getTimeTableFromHTML(html.toString());
+            return week;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            throw new RequestFailedException("a unexpected exception occurred");
+        }
     }
     private String constructAuthCookieHeaderValue() throws NotLoggedInException {
         String cookie;
