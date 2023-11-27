@@ -1,16 +1,9 @@
 package net.anax.scraper;
 
-import net.anax.config.Configuration;
-import net.anax.config.ConfigurationManager;
 import net.anax.data.*;
 import net.anax.http.HttpCookie;
 import net.anax.http.HttpMethod;
 import net.anax.logging.Logger;
-import net.anax.util.StringUtilities;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -22,35 +15,32 @@ import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
 public class SkolaOnlineScraper {
-    private final String base_url = "https://www.skolaonline.cz";
 
-    private String username;
-    private String password;
-    private HashMap<String, HttpCookie> cookies = new HashMap<>();
-    private Configuration configuration;
+    private final String username;
+    private final String password;
+    private final HashMap<String, HttpCookie> cookies = new HashMap<>();
+
     public SkolaOnlineScraper(String username, String password){
         this.username = username;
         this.password = password;
-
-        configuration = ConfigurationManager.getInstance().getConfiguration();
     }
 
-    public void login() throws RequestFailedException, IOException {
+    public boolean login(){
         try{
             login(false);
-        }catch(RequestFailedException e){
-            throw e;
-        }
-        catch(IOException e){
-            throw e;
+        }catch(RequestFailedException | IOException e){
+            e.printStackTrace();
+            return false;
         }
         catch(Exception e){
             System.out.println("unexpected exception");
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
-    public void login(boolean safe) throws IOException, RequestFailedException {
-        if(safe){login();}
+    public boolean login(boolean safe) throws IOException, RequestFailedException {
+        if(safe){return login();}
 
         URL url = new URL("https://aplikace.skolaonline.cz/SOL/Prihlaseni.aspx");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -140,6 +130,8 @@ public class SkolaOnlineScraper {
         }
 
         connection.disconnect();
+
+        return true;
 
     }
     private String constructLoginRequestBody(String boundary){
@@ -239,7 +231,7 @@ Content-Disposition: form-data; name="__RequestVerificationToken"
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
         while((line = reader.readLine()) != null){
-            html.append(line + "\n");
+            html.append(line).append("\n");
         }
 
         for(int i = 0; ; i++){

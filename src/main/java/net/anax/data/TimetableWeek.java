@@ -94,8 +94,6 @@ public class TimetableWeek {
         timetable.lessonTimeIntervals = getLessonTimeIntervals(allRows.get(0));
 
         int dayIndex = 0;
-        ;System.out.println("Rows: " + allRows.size());
-        ;System.out.println("lesson count: " + lessonCount);
 
         for (int rowIndex = 1; rowIndex < allRows.size(); rowIndex++){
             Element th = allRows.get(rowIndex).select("> th").first();
@@ -197,7 +195,7 @@ public class TimetableWeek {
         data.put("days", day_array);
         return data;
     }
-    public static TimetableWeek parseFromJsonString(String jsonString) throws ParseException, InvalidDataInJsonException {
+    public static TimetableWeek parseFromJsonString(String jsonString) throws ParseException {
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(jsonString);
 
