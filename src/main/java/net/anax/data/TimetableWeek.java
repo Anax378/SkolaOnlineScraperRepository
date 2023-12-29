@@ -202,7 +202,6 @@ public class TimetableWeek {
         TimetableWeek week = new TimetableWeek(0, 0);
 
         if(json.containsKey("days") && json.get("days") instanceof JSONArray && !((JSONArray) json.get("days")).isEmpty() && ((JSONArray) json.get("days")).get(0) instanceof JSONObject){
-            System.out.println("HERE");
             JSONArray day_array = (JSONArray) json.get("days");
             TimetableDay[] days = new TimetableDay[day_array.size()];
             for(int i = 0; i < day_array.size(); i++){
