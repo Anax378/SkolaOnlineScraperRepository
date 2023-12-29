@@ -25,6 +25,12 @@ public class SkolaOnlineModulePage extends AbstractSkolaOnlinePage{
         this.hiddenFormInputs = hiddenFormInputs;
     }
 
+    /**
+     * returns a new SkolaOnlineTimetablePage. the date on this page is not guaranteed to be any specific value.
+     * @exception IOException in case the connection fails.
+     * @return returns a new SkolaOnlineTimetablePage, this page may be broken,
+     * which cannot be confirmed until an attempt to extract the timetable is made.
+     */
     public SkolaOnlineTimetablePage goToTimetable() throws IOException {
         if(doLogs){
             System.out.println("==================================START OF goToTimetable() log==============================");
@@ -69,6 +75,7 @@ public class SkolaOnlineModulePage extends AbstractSkolaOnlinePage{
         if(doLogs){
             System.out.println("==================================END OF goToTimetable() log==============================");
         }
+        response.disconnect();
         return timetablePage;
     }
 

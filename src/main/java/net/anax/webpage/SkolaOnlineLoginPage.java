@@ -6,6 +6,7 @@ import net.anax.http.HttpMethod;
 import net.anax.http.HttpRequest;
 import net.anax.http.HttpResponse;
 import net.anax.logging.Logger;
+import net.anax.scraper.RequestFailedException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -21,9 +22,19 @@ public class SkolaOnlineLoginPage extends AbstractSkolaOnlinePage{
         this.hiddenFormInputs = new HashMap<>();
     }
 
+    /**
+     * calls loadNew() with logs disabled
+     */
     public static SkolaOnlineLoginPage loadNew() throws IOException {
         return loadNew(false);
     }
+
+    /**
+     * loads a new login page
+     * @param doLogs specifies if the function should do logs. this argument is propagated to all subsequent pages.
+     * @return returns a new login page from which you can than login into SkolaOnline
+     * @exception IOException is thrown in case of a failed connection.
+     */
     public static SkolaOnlineLoginPage loadNew(boolean doLogs) throws IOException {
         if(doLogs){System.out.println("===========================================START OF loadNew() LOG===========================================");}
         SkolaOnlineLoginPage loginPage = new SkolaOnlineLoginPage();
@@ -61,7 +72,17 @@ public class SkolaOnlineLoginPage extends AbstractSkolaOnlinePage{
         return loginPage;
     }
 
-    public SkolaOnlineModulePage login(String username, String password) throws IOException {
+    /**
+     * logs in to SkolaOnline
+     * @param username the username with which to log in.
+     * @param password the password with which to log in.
+     * @return returns a new SkolaOnlineModulePage.
+     * @exception IOException is thrown in case of failed connection.
+     * @exception RequestFailedException is thrown if the response did not contain an authentication token.
+     * thi can be caused by invalid credentials or by the protocol SkolaOnline uses changing.*
+     *
+     */
+    public SkolaOnlineModulePage login(String username, String password) throws IOException, RequestFailedException {
         if(doLogs){System.out.println("=========================================START OF login() LOG=========================================");}
         SkolaOnlineModulePage modulePage = new SkolaOnlineModulePage(this.cookieCache, this.hiddenFormInputs);
         modulePage.doLogs = doLogs;
@@ -86,6 +107,11 @@ public class SkolaOnlineLoginPage extends AbstractSkolaOnlinePage{
 
 
         response.addCookiesToCache(modulePage.cookieCache);
+
+        if(modulePage.cookieCache.getCookie(".ASPXAUTH") == null){
+            throw new RequestFailedException("failed to login");
+        }
+
         String body = response.getBody();
         Document doc = Jsoup.parse(body);
 

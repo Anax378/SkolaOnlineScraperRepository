@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
@@ -22,16 +23,22 @@ public class SkolaOnlineTimetablePage extends AbstractSkolaOnlinePage{
     String html;
     TimetableWeek week = null;
     boolean doLogs;
-    public SkolaOnlineTimetablePage(){}
-    public SkolaOnlineTimetablePage(BrowserCookieCache cache, HashMap<String, HiddenFormInput> hiddenFromInputs){
+    SkolaOnlineTimetablePage(){}
+    SkolaOnlineTimetablePage(BrowserCookieCache cache, HashMap<String, HiddenFormInput> hiddenFromInputs){
         this.cookieCache = cache;
         this.hiddenFormInputs = hiddenFromInputs;
     }
-    public SkolaOnlineTimetablePage addHtml(String html){
+    SkolaOnlineTimetablePage addHtml(String html){
         this.html = html;
         return this;
     }
 
+    /**
+     * extracts the timetable from the page.
+     * @return returns a new TimetableWeek containing the data for the week contained in the page.
+     * @exception RequestFailedException is thrown if the timetable is not contained in the page.
+     * this is probably caused a change in the protocol SkolaOnline uses.
+     */
     public TimetableWeek getTimetable() throws RequestFailedException {
         if(week == null){
             week = TimetableWeek.getTimeTableFromHTML(html);
@@ -39,7 +46,14 @@ public class SkolaOnlineTimetablePage extends AbstractSkolaOnlinePage{
         return week;
     }
 
-    public SkolaOnlineTimetablePage changeDateTo(LocalDateTime datetime) throws IOException {
+    /**
+     * returns a new SkolaOnlineTimetablePage that has the timetable with the date provided.
+     * @param date the datetime to which the timetable week contained will correspond.
+     * @return returns a SkolaOnlineTimetablePage, the page can be broken,
+     * which cannot be verified until an attempt to extract the timetable is made.
+     * @exception IOException ios thrown in case of a failed connection.
+     */
+    public SkolaOnlineTimetablePage changeDateTo(LocalDate date) throws IOException {
         if(doLogs){
             System.out.println("==================START OF changeDateTo() LOG======================");
         }
@@ -49,7 +63,7 @@ public class SkolaOnlineTimetablePage extends AbstractSkolaOnlinePage{
         request.setHeader("Referer", "https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx");
         request.setHeader("Origin", "https://aplikace.skolaonline.cz");
         request.setHeader("Content-Type", "application/x-www-form-urlencoded");
-        request.setBody(constructChangeDateRequestPayload(datetime));
+        request.setBody(constructChangeDateRequestPayload(date));
 
         request.addCookie(cookieCache.getCookie("ASP.NET_SessionId"));
         request.addCookie(cookieCache.getCookie("SERVERID"));
@@ -85,14 +99,14 @@ public class SkolaOnlineTimetablePage extends AbstractSkolaOnlinePage{
             System.out.println("-----------------------changeDateTo() hidden inputs start--------------------");
             System.out.println("==================END OF changeDateTo() LOG======================");
         }
-
+        response.disconnect();
         return timetablePage;
     }
 
-    private String constructChangeDateRequestPayload(LocalDateTime dateTime){
-        String year = String.valueOf(dateTime.getYear());
-        String month = String.valueOf(dateTime.getMonthValue());
-        String day = String.valueOf(dateTime.getDayOfMonth());
+    private String constructChangeDateRequestPayload(LocalDate date){
+        String year = String.valueOf(date.getYear());
+        String month = String.valueOf(date.getMonthValue());
+        String day = String.valueOf(date.getDayOfMonth());
 
         String calendar_part = "%253Cx%2520PostData%253D%2522" + year + "x" + month + "x" + year + "x" + month + "x" + day + "x1%2522%253E%253C%2Fx%253E";
 
