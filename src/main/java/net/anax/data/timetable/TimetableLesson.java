@@ -1,4 +1,4 @@
-package net.anax.data;
+package net.anax.data.timetable;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -13,7 +13,7 @@ public class TimetableLesson {
     public String groupShortcut;
     public String classroomShortcut;
     public FurtherInfoElement[] furtherInfo;
-    public TimetableLessonType type;
+    public ETimetableLessonType type;
     public TimetableAssessment[] assessments;
     public static TimetableLesson getBlankLesson(){
         TimetableLesson lesson = new TimetableLesson();
@@ -22,7 +22,7 @@ public class TimetableLesson {
         lesson.groupShortcut = "";
         lesson.classroomShortcut = "";
         lesson.furtherInfo = new FurtherInfoElement[0];
-        lesson.type = TimetableLessonType.REGULAR;
+        lesson.type = ETimetableLessonType.REGULAR;
         lesson.assessments = new TimetableAssessment[0];
         return lesson;
     }
@@ -37,7 +37,7 @@ public class TimetableLesson {
 
         String innerTdClass = innerTd.className();
         if(innerTdClass != null){
-            for(TimetableLessonType type : TimetableLessonType.values()){
+            for(ETimetableLessonType type : ETimetableLessonType.values()){
                 if(type.identifier.equals(innerTdClass)){
                     lesson.type = type;
                 }
@@ -104,7 +104,7 @@ public class TimetableLesson {
 
         if(data.containsKey("type") && data.get("type") instanceof String){
             String type_name = (String) data.get("type");
-            for(TimetableLessonType type : TimetableLessonType.values()){
+            for(ETimetableLessonType type : ETimetableLessonType.values()){
                 if(type.name().equals(type_name)){
                     lesson.type = type;
                     break;

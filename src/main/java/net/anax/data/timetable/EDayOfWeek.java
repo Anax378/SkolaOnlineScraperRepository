@@ -1,6 +1,6 @@
-package net.anax.data;
+package net.anax.data.timetable;
 
-public enum DayOfWeek {
+public enum EDayOfWeek {
     SUNDAY("Sunday", 0),
     MONDAY("Monday", 1),
     TUESDAY("Tuesday", 2),
@@ -11,7 +11,7 @@ public enum DayOfWeek {
 
     String name;
     int index;
-    DayOfWeek(String name, int index){
+    EDayOfWeek(String name, int index){
         this.name = name;
         this.index = index;
     }

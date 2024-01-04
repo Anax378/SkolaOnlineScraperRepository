@@ -1,13 +1,13 @@
-package net.anax.data;
+package net.anax.data.timetable;
 
-public enum TimetableLessonType {
+public enum ETimetableLessonType {
     REGULAR("DctInnerTableType10DataTD"),
     EVENT("KuvSkolniAkceHodina"),
     REPLACED("KuvSuplovanaHodina"),
     REPLACEMENT("KuvSuplujiciHodina")
     ;
     public final String identifier;
-    TimetableLessonType(String name){
+    ETimetableLessonType(String name){
         this.identifier = name;
     }
 }

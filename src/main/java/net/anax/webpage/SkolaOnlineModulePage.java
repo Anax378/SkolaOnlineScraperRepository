@@ -2,13 +2,14 @@ package net.anax.webpage;
 
 import net.anax.browser.BrowserCookieCache;
 import net.anax.http.HttpCookie;
-import net.anax.http.HttpMethod;
+import net.anax.http.EHttpMethod;
 import net.anax.http.HttpRequest;
 import net.anax.http.HttpResponse;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -35,7 +36,7 @@ public class SkolaOnlineModulePage extends AbstractSkolaOnlinePage{
         if(doLogs){
             System.out.println("==================================START OF goToTimetable() log==============================");
         }
-        HttpRequest request = new HttpRequest(new URL("https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx"), HttpMethod.GET);
+        HttpRequest request = new HttpRequest(new URL("https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx"), EHttpMethod.GET);
         addCommonHeadersToRequest(request);
         request.setHeader("Referrer", "https://aplikace.skolaonline.cz/SOL/App/Spolecne/KZZ010_RychlyPrehled.aspx");
 
@@ -78,5 +79,52 @@ public class SkolaOnlineModulePage extends AbstractSkolaOnlinePage{
         response.disconnect();
         return timetablePage;
     }
+
+    public SkolaOnlineAssessmentsPage goToAssessments() throws IOException {
+
+        if(doLogs){
+            System.out.println("========================= goToAssessments() start =====================");
+        }
+
+        HttpRequest request = new HttpRequest(new URL("https://aplikace.skolaonline.cz/SOL/App/Hodnoceni/KZH003_PrubezneHodnoceni.aspx"), EHttpMethod.GET);
+        addCommonHeadersToRequest(request);
+        request.setHeader("Referrer", "https://aplikace.skolaonline.cz/SOL/App/Spolecne/KZZ010_RychlyPrehled.aspx");
+        request.addCookie(this.cookieCache.getCookie("ASP.NET_SessionId"));
+        request.addCookie(this.cookieCache.getCookie("ZPUSOB_OVERENI"));
+        request.addCookie(this.cookieCache.getCookie("SERVERID"));
+        request.addCookie(this.cookieCache.getCookie(".ASPXAUTH"));
+        request.addCookie(new HttpCookie("cookieconsent_sol", "{\"level\":[\"necessary\"],\"revision\":0,\"data\":null,\"rfc_cookie\":false}"));
+
+        if(doLogs){request.printSelf();}
+
+        HttpResponse response = request.send();
+
+        if(doLogs){response.printSelf();}
+
+        SkolaOnlineAssessmentsPage assessmentsPage = new SkolaOnlineAssessmentsPage(this.cookieCache, this.hiddenFormInputs);
+        assessmentsPage.addHtml(response.getBody());
+        assessmentsPage.doLogs = doLogs;
+
+        response.addCookiesToCache(this.cookieCache);
+
+        Document doc = Jsoup.parse(response.getBody());
+        updateHiddenFormInputs(doc);
+
+        if(doLogs){
+            System.out.println("-------------------goToAssessments() hidden inputs start-------------------");
+            for(String input : hiddenFormInputs.keySet()){
+                System.out.println(input + ": " + hiddenFormInputs.get(input).value);
+            }
+            System.out.println("-------------------goToAssessments() hidden inputs end-------------------");
+        }
+
+        if(doLogs){
+            System.out.println("========================= goToAssessments() end =====================");
+        }
+
+        return assessmentsPage;
+    }
+
+
 
 }

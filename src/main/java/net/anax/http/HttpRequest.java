@@ -11,12 +11,12 @@ public class HttpRequest {
    HttpURLConnection connection;
    String body;
    ArrayList<HttpCookie> cookies = new ArrayList<>();
-   HttpMethod method;
+   EHttpMethod method;
    URL url;
    ArrayList<HttpHeader> headers = new ArrayList<>();
    HttpRequest(URL url){
       this.url = url;
-      this.method = HttpMethod.GET;
+      this.method = EHttpMethod.GET;
    }
 
    public void printSelf(){
@@ -45,11 +45,11 @@ public class HttpRequest {
       System.out.println("----------------HttpRequest printSelf() End ----------------");
 
    }
-   public HttpRequest(URL url, HttpMethod method) throws IOException {
+   public HttpRequest(URL url, EHttpMethod method) throws IOException {
       this(url);
       this.setMethod(method);
    }
-   void setMethod(HttpMethod method) throws ProtocolException {
+   void setMethod(EHttpMethod method) throws ProtocolException {
       this.method = method;
    };
    public void setHeader(String header, String value){

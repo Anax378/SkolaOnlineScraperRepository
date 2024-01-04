@@ -1,9 +1,9 @@
 package net.anax.webpage;
 
 import net.anax.browser.BrowserCookieCache;
-import net.anax.data.TimetableWeek;
+import net.anax.data.timetable.TimetableWeek;
 import net.anax.http.HttpCookie;
-import net.anax.http.HttpMethod;
+import net.anax.http.EHttpMethod;
 import net.anax.http.HttpRequest;
 import net.anax.http.HttpResponse;
 import net.anax.logging.Logger;
@@ -16,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class SkolaOnlineTimetablePage extends AbstractSkolaOnlinePage{
@@ -58,7 +57,7 @@ public class SkolaOnlineTimetablePage extends AbstractSkolaOnlinePage{
             System.out.println("==================START OF changeDateTo() LOG======================");
         }
 
-        HttpRequest request = new HttpRequest(new URL("https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx"), HttpMethod.POST);
+        HttpRequest request = new HttpRequest(new URL("https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx"), EHttpMethod.POST);
         addCommonHeadersToRequest(request);
         request.setHeader("Referer", "https://aplikace.skolaonline.cz/SOL/App/Kalendar/KZK001_KalendarTyden.aspx");
         request.setHeader("Origin", "https://aplikace.skolaonline.cz");

@@ -8,7 +8,6 @@ import org.json.simple.parser.ParseException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class Main {
     public static void main(String[] args) throws IOException, RequestFailedException, ParseException{
@@ -19,6 +18,7 @@ public class Main {
         String username = (String) data.get("username");
 
         System.out.println(SkolaOnlineLoginPage.loadNew(true).login(username, password).goToTimetable().changeDateTo(LocalDate.of(2023, 11, 24)).getTimetable().getJsonObject().toJSONString());
+        SkolaOnlineLoginPage.loadNew(true).login(username, password).goToAssessments().getAssessmentList().printSelf();
 
 
     }

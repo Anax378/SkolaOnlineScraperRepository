@@ -1,11 +1,9 @@
 package net.anax.webpage;
 
 import net.anax.browser.BrowserCookieCache;
-import net.anax.http.HttpCookie;
-import net.anax.http.HttpMethod;
+import net.anax.http.EHttpMethod;
 import net.anax.http.HttpRequest;
 import net.anax.http.HttpResponse;
-import net.anax.logging.Logger;
 import net.anax.scraper.RequestFailedException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -40,7 +38,7 @@ public class SkolaOnlineLoginPage extends AbstractSkolaOnlinePage{
         SkolaOnlineLoginPage loginPage = new SkolaOnlineLoginPage();
         loginPage.doLogs = doLogs;
 
-        HttpRequest request = new HttpRequest(new URL(url), HttpMethod.GET);
+        HttpRequest request = new HttpRequest(new URL(url), EHttpMethod.GET);
 
         addCommonHeadersToRequest(request);
 
@@ -87,7 +85,7 @@ public class SkolaOnlineLoginPage extends AbstractSkolaOnlinePage{
         SkolaOnlineModulePage modulePage = new SkolaOnlineModulePage(this.cookieCache, this.hiddenFormInputs);
         modulePage.doLogs = doLogs;
 
-        HttpRequest request = new HttpRequest(new URL(SkolaOnlineModulePage.loginUrl), HttpMethod.POST);
+        HttpRequest request = new HttpRequest(new URL(SkolaOnlineModulePage.loginUrl), EHttpMethod.POST);
 
         String boundary = getBoundary();
         String payload = constructLoginRequestBody(boundary, username, password);

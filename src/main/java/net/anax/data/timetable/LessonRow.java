@@ -1,4 +1,4 @@
-package net.anax.data;
+package net.anax.data.timetable;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

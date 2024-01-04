@@ -1,4 +1,4 @@
-package net.anax.data;
+package net.anax.data.timetable;
 
 import net.anax.scraper.RequestFailedException;
 import net.anax.util.StringUtilities;
@@ -16,13 +16,24 @@ import java.util.Arrays;
 public class TimetableWeek {
 
     public TimetableDay[] days;
+    /** contains the time intervals for each lesson column. for example "07:20 - 08:05" **/
     public String[] lessonTimeIntervals;
 
+    /**
+     * the constructor for a new TimetableWeek.
+     * @param maxLessons is the maximum of lessons the timetable can contain,
+     * this is used for the amount of lesson time intervals.
+     * @param daysDisplayed is the amount of days that the week should contain.
+     * @return returns a new TimetableWeek.
+     */
     public TimetableWeek(int maxLessons, int daysDisplayed){
         lessonTimeIntervals = new String[maxLessons];
         days = new TimetableDay[daysDisplayed];
     }
 
+    /**
+     * a function created for debugging purposes. prints the data contained in the timetable to the console.
+     */
     public void printSelf(){
         for(int i = 0; i < days.length; i++){
             if(days[i] == null){
@@ -66,6 +77,13 @@ public class TimetableWeek {
     private String pad(int finalLength, String string){
         return string + " ".repeat(Math.max(0, finalLength-string.length()));
     }
+
+    /**
+     * extracts a timetable from the html code of a SkolaOnline timetable page.
+     * @param html is the html the timetable is to be extracted from.
+     * @exception RequestFailedException is thrown if the html code provided does not contain a timetable
+     * that can be parsed. this can be caused by a broken page or the change of the layout of the timetable on the page.
+     */
     public static TimetableWeek getTimeTableFromHTML(String html) throws RequestFailedException {
         Document doc = Jsoup.parse(html);
 
@@ -180,6 +198,12 @@ public class TimetableWeek {
         }
         return lessonTimeIntervals;
     }
+
+    /**
+     * returns the json object in which the entire timetable is stored
+     * @return returns a JSONObject from the library json-simple that contains the timetable data.
+     * the returned object can be converted into a string using {@link JSONObject#toJSONString()}
+     */
     public JSONObject getJsonObject(){
         JSONObject data = new JSONObject();
 
@@ -195,6 +219,15 @@ public class TimetableWeek {
         data.put("days", day_array);
         return data;
     }
+
+
+    /**
+     * parses a jsonString and returns a TimetableWeek.
+     * @param jsonString the jsonString from which the timetable will be parsed.
+     * can be obtained from a JSONObject using {@link JSONObject#toJSONString()}
+     * @return returns a TimetableWeek containing the timetable.
+     * @exception ParseException is thrown in case of an invalid jsonString.
+     */
     public static TimetableWeek parseFromJsonString(String jsonString) throws ParseException {
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(jsonString);

@@ -1,5 +1,6 @@
 import net.anax.data.InvalidDataInJsonException;
-import net.anax.data.TimetableWeek;
+import net.anax.data.assessment.AssessmentList;
+import net.anax.data.timetable.TimetableWeek;
 import net.anax.scraper.RequestFailedException;
 import org.json.simple.parser.ParseException;
 
@@ -14,11 +15,11 @@ public class Main {
         while((line = reader.readLine()) != null){
             builder.append(line);
         }
-        TimetableWeek week = TimetableWeek.getTimeTableFromHTML(builder.toString());
-        String json = week.getJsonObject().toJSONString();
-        TimetableWeek reconstructedWeek = TimetableWeek.parseFromJsonString(json);
-        System.out.println(json);
-        System.out.println(reconstructedWeek.getJsonObject().toJSONString());
+        String html = builder.toString();
+
+        AssessmentList list = AssessmentList.parseFromHTML(html);
+        System.out.println(list.getJSONObject().toJSONString());
+        list.printSelf();
 
     }
 }
