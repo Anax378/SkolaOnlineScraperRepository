@@ -39,7 +39,7 @@ public class Assessment {
             assessment.weight = cells.get(6).getElementsByTag("nobr").first().text();
             assessment.result = cells.get(7).getElementsByTag("nobr").first().text();
             assessment.verbalAssessment = cells.get(8).getElementsByTag("nobr").first().text();
-        }catch (NullPointerException e){
+        }catch (NullPointerException | IndexOutOfBoundsException e){
             throw new RequestFailedException("data not found in html");
         }
 
