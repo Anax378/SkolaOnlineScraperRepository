@@ -1,7 +1,6 @@
-import net.anax.data.InvalidDataInJsonException;
-import net.anax.data.assessment.AssessmentList;
-import net.anax.data.timetable.TimetableWeek;
-import net.anax.scraper.RequestFailedException;
+import net.anax.skolaOnlineScraper.data.InvalidDataInJsonException;
+import net.anax.skolaOnlineScraper.data.assessment.AssessmentList;
+import net.anax.skolaOnlineScraper.scraper.RequestFailedException;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
